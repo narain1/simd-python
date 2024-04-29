@@ -128,4 +128,4 @@ void matrix_multiply_simd(float* A, float* B, float* C, int N) {
             #endif
         }
     }
-}
+

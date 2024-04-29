@@ -1,0 +1,53 @@
+# Ignore object files
+*.o
+
+# Ignore static libraries
+*.a
+*.lib
+
+# Ignore dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Ignore executable files
+*.exe
+*.out
+*.bin
+*.run
+
+# Ignore build directories
+build/
+out/
+Release/
+Debug/
+
+# Ignore files produced by popular IDEs
+.vs/
+.vscode/
+*.code-workspace
+*.sublime-workspace
+*.sublime-project
+
+# Ignore editor backup files
+*~
+.*.swp
+.*.swo
+.*.bak
+.*.tmp
+
+# Ignore macOS specific files
+.DS_Store
+
+# Ignore log files and databases
+*.log
+*.sql
+*.sqlite
+
+# Ignore dependency directories (e.g., node_modules)
+node_modules/
+
+# Ignore packaging artifacts
+*.tar.gz
+*.zip
+

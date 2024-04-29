@@ -1,0 +1,27 @@
+# Define the compiler and flags
+cc = gcc
+cflags = -O3 -march=native -fPIC
+ldflags = -shared
+
+# Define the output and source
+libname = libsimd.so
+source = add.c
+
+# Rule to compile the C source to an object file
+rule cc
+  command = $cc $cflags -c $in -o $out
+  description = Compiling $out
+
+# Rule to link the object file into a shared library
+rule link
+  command = $cc $ldflags $in -o $out
+  description = Linking $out
+
+# Build the object file
+build simd.o: cc $source
+
+# Build the shared library
+build $libname: link simd.o
+
+# Default build target
+default $libname

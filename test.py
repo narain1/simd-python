@@ -2,7 +2,7 @@ import ctypes
 import numpy as np
 
 # Load the shared library
-lib = ctypes.CDLL('./libsimd.so')
+lib = ctypes.CDLL('./lib.so')
 
 # Define the argument types for the add_floats function
 lib.add_floats.argtypes = [

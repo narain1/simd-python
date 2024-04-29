@@ -1,27 +1,19 @@
-# Define the compiler and flags
+# Variables for compiler and flags
 cc = gcc
-cflags = -O3 -march=native -fPIC
-ldflags = -shared
+common_flags = -O3 -fPIC -shared
+sse_flags = -msse2 -msse3 
+avx2_flags = -mavx2 -DUSE_AVX2 -msse3 
 
-# Define the output and source
-libname = libsimd.so
-source = add.c
+# Output binary name
+output = lib.so
 
-# Rule to compile the C source to an object file
-rule cc
-  command = $cc $cflags -c $in -o $out
-  description = Compiling $out
+# Rule to compile using detected SIMD
+rule build_optimized
+  command = /bin/sh -c "cc_flags=\$$(./setup/detect_simd.sh) && echo 'Using Flags: $$cc_flags' && $cc $common_flags $$cc_flags lib.c -o $out"
+  description = Building with detected SIMD flags
 
-# Rule to link the object file into a shared library
-rule link
-  command = $cc $ldflags $in -o $out
-  description = Linking $out
-
-# Build the object file
-build simd.o: cc $source
-
-# Build the shared library
-build $libname: link simd.o
+# Build the optimized version
+build $output: build_optimized
 
 # Default build target
-default $libname
+default $output

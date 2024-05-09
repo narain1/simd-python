@@ -4,10 +4,20 @@
 
 // Define whether to use AVX2 or SSE based on compiler flags
 #if defined(USE_AVX2) && !defined(USE_SSE)
-#define SIMD_WIDTH 8
+    #define SIMD_WIDTH 8
+    #define SIMD_TYPE "AVX2"
+#elif !defined(USE_AVX2) && defined(USE_SSE)
+    #define SIMD_WIDTH 4
+    #define SIMD_TYPE "SSE"
 #else
-#define SIMD_WIDTH 4
+    #define SIMD_WIDTH 1
+    #define SIMD_TYPE "No SIMD"
 #endif
+
+
+void print_simd_info() {
+    printf("Compiled with %s support.\n", SIMD_TYPE);
+}
 
 void add_floats(float* a, float* b, float* result, int n) {
     int i;
@@ -92,26 +102,28 @@ void matrix_multiply_simd(float* A, float* B, float* C, int N) {
     // Choose SIMD width based on available instruction set
     #if defined(USE_AVX2) && !defined(USE_SSE)
     const int width = 8;
+    __m256 sum_vec, a_vec, b_vec;
     #else
     const int width = 4;
+    __m128 sum_vec, a_vec, b_vec;
     #endif
 
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             #if defined(USE_AVX2) && !defined(USE_SSE)
-            __m256 sum_vec = _mm256_setzero_ps();
+            sum_vec = _mm256_setzero_ps();
             #else
-            __m128 sum_vec = _mm_setzero_ps();
+            sum_vec = _mm_setzero_ps();
             #endif
 
             for (k = 0; k < N; k += width) {
                 #if defined(USE_AVX2) && !defined(USE_SSE)
-                __m256 a_vec = _mm256_loadu_ps(&A[i * N + k]);
-                __m256 b_vec = _mm256_loadu_ps(&B[k * N + j]);
+                a_vec = _mm256_loadu_ps(&A[i * N + k]);
+                b_vec = _mm256_loadu_ps(&B[k * N + j]);
                 sum_vec = _mm256_add_ps(sum_vec, _mm256_mul_ps(a_vec, b_vec));
                 #else
-                __m128 a_vec = _mm_loadu_ps(&A[i * N + k]);
-                __m128 b_vec = _mm_loadu_ps(&B[k * N + j]);
+                a_vec = _mm_loadu_ps(&A[i * N + k]);
+                b_vec = _mm_loadu_ps(&B[k * N + j]);
                 sum_vec = _mm_add_ps(sum_vec, _mm_mul_ps(a_vec, b_vec));
                 #endif
             }
@@ -120,7 +132,9 @@ void matrix_multiply_simd(float* A, float* B, float* C, int N) {
             #if defined(USE_AVX2) && !defined(USE_SSE)
             sum_vec = _mm256_hadd_ps(sum_vec, sum_vec);
             sum_vec = _mm256_hadd_ps(sum_vec, sum_vec);
-            C[i * N + j] = _mm256_cvtss_f32(_mm256_castps256_ps128(sum_vec));
+            float temp[8];
+            _mm256_storeu_ps(temp, sum_vec);
+            C[i * N + j] = temp[0] + temp[6];  // Manually sum the remaining elements
             #else
             sum_vec = _mm_hadd_ps(sum_vec, sum_vec);
             sum_vec = _mm_hadd_ps(sum_vec, sum_vec);
@@ -128,4 +142,10 @@ void matrix_multiply_simd(float* A, float* B, float* C, int N) {
             #endif
         }
     }
+}
 
+
+int main() {
+  print_simd_info();
+  return 0;
+}
